@@ -14,3 +14,6 @@ target_link_libraries(main
 find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIR})
 target_link_libraries(main PRIVATE ${OPENGL_LIBRARIES})
+
+find_package(glad CONFIG REQUIRED)
+target_link_libraries(main PRIVATE glad::glad)

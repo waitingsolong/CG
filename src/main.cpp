@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
+#include <glad/glad.h>
 
 int main(int argc, char* argv[])
 {
@@ -20,6 +20,11 @@ int main(int argc, char* argv[])
     }
 
     SDL_GLContext glcontext = SDL_GL_CreateContext(window);
+
+    if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
+        std::cout << "Failed to initialize GLAD" << std::endl;
+        return -1;
+    }
 
     SDL_Event e;
     bool quit = false;
