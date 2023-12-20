@@ -7,26 +7,26 @@
 #include <string>
 #include <SDL2/SDL.h>
 #include <glad/glad.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <Windows.h> 
 #include <GL/glu.h>
 
 const char* vertexShaderSource = "#version 460 core\n"
 "layout (location = 0) in vec3 aPos;\n"
-"layout (location = 1) in vec3 aColor;\n"
-"layout (location = 2) in vec2 aTexCoord;\n"
-"out vec3 ourColor;\n"
+"layout (location = 1) in vec2 aTexCoord;\n"
 "out vec2 TexCoord;\n"
+"uniform mat4 transform;\n"
 "void main()\n"
 "{\n"
-"   gl_Position = vec4(aPos, 1.0);\n"
-"   ourColor = aColor;\n"
+"   gl_Position = transform * vec4(aPos, 1.0);\n"
 "   TexCoord = aTexCoord;\n"
 "}\0";
 
 const char* fragmentShaderSource = "#version 460 core\n"
 "out vec4 FragColor;\n"
-"in vec3 ourColor;\n"
 "in vec2 TexCoord;\n"
 "uniform sampler2D ourTexture;\n"
 "void main()\n"
@@ -103,11 +103,11 @@ int main(int argc, char* argv[])
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float vertices[] = {
-        // positions          // colors           // texture coords
-         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
-         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
-        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
+        // positions          // texture coords
+         0.5f,  0.5f, 0.0f,   1.0f, 1.0f, // top right
+         0.5f, -0.5f, 0.0f,   1.0f, 0.0f, // bottom right
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, // bottom left
+        -0.5f,  0.5f, 0.0f,   0.0f, 1.0f  // top left 
     };
     unsigned int indices[] = {  // note that we start from 0!
         0, 1, 3,  // first Triangle
@@ -127,14 +127,11 @@ int main(int argc, char* argv[])
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    // color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
     // texture coord attribute
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     // load and create a texture 
     // -------------------------
@@ -179,9 +176,27 @@ int main(int argc, char* argv[])
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // draw our first triangle
-        glUseProgram(shaderProgram);
+        // bind textures on corresponding texture units
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
+
+        //// create transformations
+        //glm::mat4 transform = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+        //transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
+        //transform = glm::rotate(transform, (float) SDL_GetTicks64() / 1000.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+
+        // create transformations
+        glm::mat4 transform = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+        float timeValue = (float)SDL_GetTicks64() / 1000.0f;
+        float xValue = sin(timeValue) * 0.5f;
+        float yValue = sin(timeValue) * cos(timeValue) * 0.5f;
+        transform = glm::translate(transform, glm::vec3(xValue, yValue, 0.0f));
+        transform = glm::rotate(transform, timeValue, glm::vec3(1.0f, 1.0f, 0.0f));
+
+        glUseProgram(shaderProgram);
+        unsigned int transformLoc = glGetUniformLocation(shaderProgram, "transform");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+        
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
