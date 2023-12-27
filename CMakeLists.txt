@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.22)
 
 project(main)
 
-add_executable(main "src/main.cpp" "src/managers/shadermanager.h" "src/managers/shadermanager.cpp" "src/managers/texturemanager.h" "src/managers/texturemanager.cpp"  "src/managers/buffermanager.h" "src/managers/buffermanager.cpp")
+add_executable(main "src/main.cpp" "src/managers/shadermanager.h" "src/managers/shadermanager.cpp" "src/managers/texturemanager.h" "src/managers/texturemanager.cpp"  "src/managers/buffermanager.h" "src/managers/buffermanager.cpp"  "src/movingcamera.h" "src/movingcamera.cpp")
 target_compile_definitions(main PUBLIC PROJECT_ROOT="${CMAKE_SOURCE_DIR}")
 
 find_package(SDL2 CONFIG REQUIRED)
