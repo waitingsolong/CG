@@ -1,14 +1,17 @@
 #pragma once
 
 #include <glad/glad.h>
+#include <string>
+
+#include "shader.h"
 
 class ShaderManager {
 private:
-    unsigned int shaderProgram;
+    const std::string defaultShaderPath;
+    unsigned int compileMode;
 
 public:
-    ShaderManager();
-    ~ShaderManager();
+    ShaderManager(const std::string& defaultPathFromSourceRoot);
 
-    unsigned int getUniform(const GLchar* name);
+    Shader* createShaderDefault(const std::string& name);
 };

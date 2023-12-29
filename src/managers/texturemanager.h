@@ -1,11 +1,20 @@
-#pragma once
+#pragma once 
 
-#include <vector>
+#include <string>
+#include <glad/glad.h>
 
+#include "texture.h"
+
+// creates textures. Transfers their control to external
+// one texture per texture unit 
 class TextureManager {
-private:
-    std::vector<unsigned int> textures;
-
 public:
-    TextureManager();
+    TextureManager(const std::string& defaultPath);
+
+    Texture* createTextureDefault(const std::string& name);
+
+private:
+    const std::string defaultTexturePath;
+    int currentUnit;
+    GLint maxTextureUnits;
 };

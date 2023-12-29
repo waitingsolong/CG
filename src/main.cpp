@@ -13,8 +13,8 @@
 
 #include "managers/texturemanager.h"
 #include "managers/shadermanager.h"
-#include "managers/buffermanager.h"
 #include "movingcamera.h"
+#include "GLCube.h"
 
 void handleEvents(SDL_Event& e, SDL_Window* window, bool& quit, MovingCamera& movingCamera);
 
@@ -52,31 +52,35 @@ int main(int argc, char* argv[])
     const GLubyte* version = glGetString(GL_VERSION);
     printf("OpenGL version: %s\n", version);
 
-    // main part 
-    // ---------
+    // setups 
+    // ------
 
-    TextureManager textureManager;
-    ShaderManager shaderManager; 
-    BufferManager bufferManager; 
+    TextureManager textureManager("assets/textures");
+    ShaderManager shaderManager("assets/shaders");
     MovingCamera movingCamera;
+
+    GLCube cube(
+        shaderManager.createShaderDefault("cube"),
+        textureManager.createTextureDefault("xfile")
+    ); 
+
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);;
+    cube.shader->setMat4("projection", projection);
+
+    glm::mat4 model = glm::mat4(1.0f);
+    cube.shader->setMat4("model", model);
+
+    // main loop 
+    // ---------
 
     SDL_Event e;
     bool quit = false;
-
     const int FPS = 60;
     const int frameDelay = 1000 / FPS;
     Uint32 frameStart;
     int frameTime;
 
-    glm::mat4 projection = glm::mat4(1.0f);
-    GLuint projectionLocation = shaderManager.getUniform("projection");
-    projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-    glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
-
-    glm::mat4 model = glm::mat4(1.0f);
-    glm::mat4 view = glm::mat4(1.0f);
-    GLuint modelLocation = shaderManager.getUniform("model");
-    GLuint viewLocation = shaderManager.getUniform("view");
+    glm::mat4 view;
 
     while (!quit) {
         frameStart = SDL_GetTicks();
@@ -84,14 +88,10 @@ int main(int argc, char* argv[])
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         handleEvents(e, window, quit, movingCamera);
 
-        // transformations
-        // ---------------
         view = movingCamera.getViewMatrix();
-        
-        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
-        glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
+        cube.shader->setMat4("view", view);
+        cube.draw();
 
-        bufferManager.updateBuffers();
         SDL_GL_SwapWindow(window);
         frameTime = SDL_GetTicks() - frameStart;
         if (frameDelay > frameTime) {

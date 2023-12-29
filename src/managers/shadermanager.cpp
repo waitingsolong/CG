@@ -1,77 +1,71 @@
 #include "shadermanager.h"
 
 #include <iostream> 
+#include <fstream>
+#include <sstream>
+#include <string>
 
-const char* vertexShaderSource = "#version 460 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"layout (location = 1) in vec2 aTexCoord;\n"
-"out vec2 TexCoord;\n"
-"uniform mat4 model;\n"
-"uniform mat4 view;\n"
-"uniform mat4 projection;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = projection * view * model * vec4(aPos, 1.0);\n"
-"   TexCoord = aTexCoord;\n"
-"}\0";
+#include "shader.h"
 
-const char* fragmentShaderSource = "#version 460 core\n"
-"out vec4 FragColor;\n"
-"in vec2 TexCoord;\n"
-"uniform sampler2D ourTexture;\n"
-"void main()\n"
-"{\n"
-"   FragColor = texture(ourTexture, TexCoord);\n"
-"}\n\0";
+ShaderManager::ShaderManager(const std::string& defaultPathFromSourceRoot)
+    : defaultShaderPath(std::string(PROJECT_ROOT) + '/' + defaultPathFromSourceRoot + '/'), compileMode(0b11) {}
 
-ShaderManager::ShaderManager()
-{
-    // build and compile our shader program
-    // ------------------------------------
-    // vertex shader
-    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-    // check for shader compile errors
+Shader* ShaderManager::createShaderDefault(const std::string& name) {
+    std::string shaderExtensions[3] = { ".vs", ".fs", ".gs" };
+    unsigned int shaderTypes[3] = { GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, GL_GEOMETRY_SHADER };
+    unsigned int shaders[3] = { 0, 0, 0 };
+
+    unsigned int pid = glCreateProgram();
+
+    for (int i = 0; i < 3; i++) {
+        if (!(compileMode & (1 << i))) {
+            continue; 
+        }
+            
+        std::string shaderPath = defaultShaderPath + name + shaderExtensions[i];
+        std::ifstream shaderStream(shaderPath, std::ios::in);
+
+        if (!shaderStream.is_open()) {
+            std::cout << "Error: " << shaderPath << " was not found" << std::endl;
+            continue;
+        }
+
+        std::stringstream sstr;
+        sstr << shaderStream.rdbuf();
+        std::string shaderCode = sstr.str();
+        shaderStream.close();
+
+        shaders[i] = glCreateShader(shaderTypes[i]);
+        char const* shaderSourcePointer = shaderCode.c_str();
+        glShaderSource(shaders[i], 1, &shaderSourcePointer, NULL);
+        glCompileShader(shaders[i]);
+
+        int success;
+        char infoLog[512];
+        glGetShaderiv(shaders[i], GL_COMPILE_STATUS, &success);
+        if (!success) {
+            glGetShaderInfoLog(shaders[i], 512, NULL, infoLog);
+            std::cout << "Error: " << name << shaderExtensions[i] << " has not compiled\n" << infoLog << std::endl;
+        }
+
+        glAttachShader(pid, shaders[i]);
+    }
+
+    glLinkProgram(pid);
+
     int success;
     char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-    // fragment shader
-    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-    // check for shader compile errors
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-    // link shaders
-    shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-    // check for linking errors
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    glGetProgramiv(pid, GL_LINK_STATUS, &success);
     if (!success) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+        glGetProgramInfoLog(pid, 512, NULL, infoLog);
+        std::cout << "Error: Shader program has not linked\n" << infoLog << std::endl;
     }
-    glUseProgram(shaderProgram);
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-}
 
-ShaderManager::~ShaderManager() {
-    glDeleteProgram(shaderProgram);
-}
+    for (int i = 0; i < 3; i++) {
+        if (compileMode & (1 << i)) {
+            glDeleteShader(shaders[i]);
+        }
+    }
 
-unsigned int ShaderManager::getUniform(const GLchar* name) {
-    return glGetUniformLocation(shaderProgram, name);
+    return new Shader(pid);
 }
