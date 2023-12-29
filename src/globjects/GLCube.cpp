@@ -4,8 +4,7 @@ GLCube::GLCube(Shader* shader, Texture* texture)
     : GLObject(shader, texture) 
 {
     createBufferObject();
-    shader->use();
-    shader->setTextureSampler(texture->getUnit());
+    shader->useSetTextureSampler(texture->getUnit());
 }
 
 GLCube::~GLCube() {
@@ -77,6 +76,7 @@ void GLCube::createBufferObject() {
 void GLCube::draw() {
     shader->use();
     texture->use();
+
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 36);
 }

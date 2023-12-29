@@ -42,3 +42,23 @@ void Shader::setFloat(const std::string& name, float value) const {
 void Shader::setMat4(const std::string& name, const glm::mat4& value) const {
     glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(value));
 }
+
+void Shader::useSetTextureSampler(int textureUnit) const {
+    glUseProgram(pid);
+    glUniform1i(glGetUniformLocation(pid, defaultTextureSamplerName), textureUnit);
+}
+
+void Shader::useSetInt(const std::string& name, int value) const {
+    glUseProgram(pid);
+    glUniform1i(getUniformLocation(name), value);
+}
+
+void Shader::useSetFloat(const std::string& name, float value) const {
+    glUseProgram(pid);
+    glUniform1f(getUniformLocation(name), value);
+}
+
+void Shader::useSetMat4(const std::string& name, const glm::mat4& value) const {
+    glUseProgram(pid);
+    glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(value));
+}

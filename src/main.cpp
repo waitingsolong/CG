@@ -14,7 +14,8 @@
 #include "managers/texturemanager.h"
 #include "managers/shadermanager.h"
 #include "movingcamera.h"
-#include "GLCube.h"
+#include "globjects/GLCube.h"
+#include "globjects/GLSphere.h"
 
 void handleEvents(SDL_Event& e, SDL_Window* window, bool& quit, MovingCamera& movingCamera);
 
@@ -59,16 +60,30 @@ int main(int argc, char* argv[])
     ShaderManager shaderManager("assets/shaders");
     MovingCamera movingCamera;
 
-    GLCube cube(
+    std::vector<GLObject*> glObjects;
+
+    GLCube* cube = new GLCube(
         shaderManager.createShaderDefault("cube"),
         textureManager.createTextureDefault("xfile")
     ); 
+    glObjects.push_back(cube);
 
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);;
-    cube.shader->setMat4("projection", projection);
+    GLSphere* sphere = new GLSphere(
+        shaderManager.createShaderDefault("sphere"),
+        textureManager.createTextureDefault("moon")
+    );
+    glObjects.push_back(sphere);
 
-    glm::mat4 model = glm::mat4(1.0f);
-    cube.shader->setMat4("model", model);
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+    for (auto& object : glObjects) {
+        object->shader->useSetMat4("projection", projection);
+    }
+
+    glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 0.0f, 0.0f));
+    cube->shader->useSetMat4("model", model);
+
+    model = glm::translate(glm::mat4(1.0f), glm::vec3(50.0f, 15.0f, 15.0f));
+    sphere->shader->useSetMat4("model", model);
 
     // main loop 
     // ---------
@@ -88,9 +103,15 @@ int main(int argc, char* argv[])
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         handleEvents(e, window, quit, movingCamera);
 
+        /////////////////////////////////////
+
         view = movingCamera.getViewMatrix();
-        cube.shader->setMat4("view", view);
-        cube.draw();
+        for (auto& object : glObjects) {
+            object->shader->useSetMat4("view", view);
+            object->draw();
+        }
+
+        ////////////////////////////////////
 
         SDL_GL_SwapWindow(window);
         frameTime = SDL_GetTicks() - frameStart;

@@ -12,7 +12,6 @@ private:
 
 public:
     GLCube(Shader* shader, Texture* texture);
-
     ~GLCube() override;
 
     void draw() override;

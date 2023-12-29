@@ -4,7 +4,7 @@ project(main)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(main "src/main.cpp" "src/managers/shadermanager.h" "src/managers/shadermanager.cpp" "src/managers/texturemanager.h" "src/managers/texturemanager.cpp" "src/movingcamera.h" "src/movingcamera.cpp" "src/GLObject.h" "src/managers/texture.h" "src/managers/texture.cpp" "src/managers/shader.h" "src/managers/shader.cpp" "src/GLCube.h" "src/GLCube.cpp" )
+add_executable(main "src/main.cpp" "src/managers/shadermanager.h" "src/managers/shadermanager.cpp" "src/managers/texturemanager.h" "src/managers/texturemanager.cpp" "src/movingcamera.h" "src/movingcamera.cpp" "src/globjects/GLObject.h" "src/managers/texture.h" "src/managers/texture.cpp" "src/managers/shader.h" "src/managers/shader.cpp" "src/globjects/GLCube.h" "src/globjects/GLCube.cpp"  "src/globjects/GLSphere.h" "src/globjects/GLSphere.cpp")
 target_compile_definitions(main PUBLIC PROJECT_ROOT="${CMAKE_SOURCE_DIR}")
 
 find_package(SDL2 CONFIG REQUIRED)

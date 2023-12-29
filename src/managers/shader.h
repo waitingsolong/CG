@@ -24,4 +24,9 @@ public:
     void setFloat(const std::string& name, float value) const;
     void setMat4(const std::string& name, const glm::mat4& value) const;
 
+    // glUseProgram and then set uniforms
+    void useSetTextureSampler(int textureUnit) const;
+    void useSetInt(const std::string& name, int value) const;
+    void useSetFloat(const std::string& name, float value) const;
+    void useSetMat4(const std::string& name, const glm::mat4& value) const;
 };
