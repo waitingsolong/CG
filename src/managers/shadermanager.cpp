@@ -7,8 +7,8 @@
 
 #include "shader.h"
 
-ShaderManager::ShaderManager(const std::string& defaultPathFromSourceRoot)
-    : defaultShaderPath(std::string(PROJECT_ROOT) + '/' + defaultPathFromSourceRoot + '/'), compileMode(0b11) {}
+ShaderManager::ShaderManager(const std::string& defaultPathFromProjectRoot)
+    : defaultShaderPath(std::string(PROJECT_ROOT) + '/' + defaultPathFromProjectRoot + '/'), compileMode(0b11) {}
 
 Shader* ShaderManager::createShaderDefault(const std::string& name) {
     std::string shaderExtensions[3] = { ".vs", ".fs", ".gs" };

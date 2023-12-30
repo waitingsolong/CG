@@ -11,7 +11,7 @@ private:
     unsigned int compileMode;
 
 public:
-    ShaderManager(const std::string& defaultPathFromSourceRoot);
+    ShaderManager(const std::string& defaultPathFromProjectRoot);
 
     Shader* createShaderDefault(const std::string& name);
 };

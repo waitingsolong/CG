@@ -16,11 +16,12 @@
 #include "movingcamera.h"
 #include "globjects/GLCube.h"
 #include "globjects/GLSphere.h"
+#include "globjects/GLSkybox.h"
 
 void handleEvents(SDL_Event& e, SDL_Window* window, bool& quit, MovingCamera& movingCamera);
 
-const int SCR_WIDTH = 800;
-const int SCR_HEIGHT = 600;
+const int SCR_WIDTH = 1280;
+const int SCR_HEIGHT = 720;
 
 int main(int argc, char* argv[])
 {
@@ -57,8 +58,12 @@ int main(int argc, char* argv[])
     // ------
 
     TextureManager textureManager("assets/textures");
+    textureManager.setDefaultCubeboxPath("assets/cubeboxes");
     ShaderManager shaderManager("assets/shaders");
     MovingCamera movingCamera;
+
+    // objects 
+    // -------
 
     std::vector<GLObject*> glObjects;
 
@@ -74,10 +79,19 @@ int main(int argc, char* argv[])
     );
     glObjects.push_back(sphere);
 
+    GLSkybox* skybox = new GLSkybox(
+        shaderManager.createShaderDefault("skybox"),
+        textureManager.createCubeboxDefault("field")
+    );
+
+    // transformations 
+    // ---------------
+
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     for (auto& object : glObjects) {
         object->shader->useSetMat4("projection", projection);
     }
+    skybox->shader->useSetMat4("projection", projection);
 
     glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 0.0f, 0.0f));
     cube->shader->useSetMat4("model", model);
@@ -110,6 +124,11 @@ int main(int argc, char* argv[])
             object->shader->useSetMat4("view", view);
             object->draw();
         }
+
+        // remove translation for skybox
+        view = glm::mat4(glm::mat3(view));
+        skybox->shader->useSetMat4("view", view);
+        skybox->draw();
 
         ////////////////////////////////////
 

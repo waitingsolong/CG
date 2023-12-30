@@ -9,12 +9,16 @@
 // one texture per texture unit 
 class TextureManager {
 public:
-    TextureManager(const std::string& defaultPath);
+    TextureManager(const std::string& defaultPathFromProjectRoot);
 
     Texture* createTextureDefault(const std::string& name);
 
+    void setDefaultCubeboxPath(const std::string& defaultPathFromProjectRoot);
+    Texture* createCubeboxDefault(const std::string& name);
+
 private:
     const std::string defaultTexturePath;
+    std::string defaultCubeboxPath;
     int currentUnit;
     GLint maxTextureUnits;
 };
