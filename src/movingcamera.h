@@ -20,4 +20,5 @@ public:
     void handleKeys(const Uint8* state);
 
     glm::mat4 getViewMatrix();
+    glm::vec3 getCameraPos() const;
 };

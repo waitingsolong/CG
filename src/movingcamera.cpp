@@ -29,11 +29,14 @@ void MovingCamera::handleKeys(const Uint8* state) {
     if (state[SDL_SCANCODE_D]) {
         cameraPos += glm::normalize(glm::cross(cameraFront, glm::vec3(0.0f, 1.0f, 0.0f))) * cameraSpeed;
     }
-
-    cameraPos.y = 0.0f;
 }
 
 glm::mat4 MovingCamera::getViewMatrix()
 {
     return glm::lookAt(cameraPos, cameraPos + cameraFront, glm::vec3(0.0f, 1.0f, 0.0f));
+}
+
+glm::vec3 MovingCamera::getCameraPos() const
+{
+    return cameraPos;
 }

@@ -75,14 +75,9 @@ int main(int argc, char* argv[])
 
     GLSphere* sphere = new GLSphere(
         shaderManager.createShaderDefault("sphere"),
-        textureManager.createTextureDefault("moon")
+        textureManager.createTextureDefault("sun")
     );
     glObjects.push_back(sphere);
-
-    GLSkybox* skybox = new GLSkybox(
-        shaderManager.createShaderDefault("skybox"),
-        textureManager.createCubeboxDefault("field")
-    );
 
     // transformations 
     // ---------------
@@ -91,13 +86,19 @@ int main(int argc, char* argv[])
     for (auto& object : glObjects) {
         object->shader->useSetMat4("projection", projection);
     }
-    skybox->shader->useSetMat4("projection", projection);
 
-    glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 0.0f, 0.0f));
+    glm::vec3 lightPos(0.0f);
+    
+    glm::mat4 model(1.0f);
+    model = glm::translate(model, lightPos);
+    model = glm::scale(model, glm::vec3(0.5f));
     cube->shader->useSetMat4("model", model);
 
     model = glm::translate(glm::mat4(1.0f), glm::vec3(50.0f, 15.0f, 15.0f));
+    model = glm::scale(model, glm::vec3(0.5f));
     sphere->shader->useSetMat4("model", model);
+    
+    sphere->shader->setVec3("lightPos", lightPos);
 
     // main loop 
     // ---------
@@ -111,24 +112,31 @@ int main(int argc, char* argv[])
 
     glm::mat4 view;
 
+    float speed = 0.0015f; 
+    float amplitude = 5.0f; 
+
     while (!quit) {
         frameStart = SDL_GetTicks();
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         handleEvents(e, window, quit, movingCamera);
 
         /////////////////////////////////////
 
+        sphere->shader->setVec3("viewPos", movingCamera.getCameraPos());
+
         view = movingCamera.getViewMatrix();
+
+        // sphere movement 
+        float offset = amplitude * sin(speed * frameStart);
+        glm::vec3 spherePos(offset, 0.0f, 0.0f);
+        model = glm::translate(glm::mat4(1.0f), spherePos);
+        sphere->shader->useSetMat4("model", model);
+
         for (auto& object : glObjects) {
             object->shader->useSetMat4("view", view);
             object->draw();
         }
-
-        // remove translation for skybox
-        view = glm::mat4(glm::mat3(view));
-        skybox->shader->useSetMat4("view", view);
-        skybox->draw();
 
         ////////////////////////////////////
 

@@ -7,7 +7,6 @@ GLSphere::GLSphere(Shader* shader, Texture* texture)
 {
     createBufferObject();
     shader->useSetTextureSampler(texture->getUnit());
-    shader->setFloat("attenuation", 1.0f);
 }
 
 GLSphere::~GLSphere() {
@@ -19,7 +18,7 @@ GLSphere::~GLSphere() {
 }
 
 void GLSphere::createBufferObject() {
-    createSphereBuffer(10, 10, 10);
+    createSphereBuffer(2, 100, 100);
 }
 
 struct SphereData {
