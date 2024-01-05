@@ -173,6 +173,9 @@ void handleEvents(SDL_Event& e, SDL_Window* window, bool& quit, MovingCamera& mo
             if (e.key.keysym.sym == SDLK_ESCAPE) {
                 SDL_SetRelativeMouseMode(SDL_FALSE);
             }
+            else if (e.key.keysym.sym == SDLK_q) {
+                quit = true;
+            }
         }
         else if (e.type == SDL_MOUSEBUTTONDOWN) {
             if (e.button.button == SDL_BUTTON_LEFT) {
